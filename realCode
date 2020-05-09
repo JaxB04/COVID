@@ -1,0 +1,51 @@
+# Date: 04/03/2020
+
+import sys
+import csv
+count = 0
+validStateList = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']
+for item in validStateList:
+    validStateList[count] = item.upper()
+    count += 1
+validStateCodeList = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM',  'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']
+validArrayTuples = list(zip(validStateCodeList, validStateList))
+validArrayList = [list(elem) for elem in validArrayTuples]
+
+# Main Program
+validStateCode = False
+stateCode = ''
+
+# validate if it's a real state/place
+while validStateCode == False:
+    promptMessage = "Which state code would you like COVID-19 analysis for? (Example:TX) "
+    if len(stateCode) > 0:
+        promptMessage = promptMessage + "{} is not a valid two-character postal code. ".format(stateCode)
+    stateCode = input(promptMessage)
+    stateCode = stateCode.upper()
+#    if stateCode in validStateCodeList:
+    for item in validArrayList:
+        if stateCode in item:
+            if stateCode == item[0]:
+                stateCode = item[1]
+            validStateCode = True
+
+# open data file
+fileData = 'C:\Code\COVID\COVID-19-master\csse_covid_19_data\csse_covid_19_daily_reports\\04-21-2020.csv'
+print (fileData)
+with open('04-21-2020.csv') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter =',')
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            print(f'Column names are {",".join(row)}"')
+            line_count += 1
+        else:
+            #print(f'\t{row[0]} blah blah {row[1]}, ibarim hay o lam kay yam {row[2]}.')
+            line_count += 1
+        #print(f'Processed {line_count} lines.')
+# add up all cases from input state
+
+# output results
+print("In " + str(stateCode) + ", x number of people contracted the disease.")
+print("In " + str(stateCode) + ", x number of people died from the disease, which is ? of the total cases in " + str(stateCode) + ".")
+print("In " + str(stateCode) + ", x number of people recovered from the disease, which is ? of the total cases in " + str(stateCode) + ".")
