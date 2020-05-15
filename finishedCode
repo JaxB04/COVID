@@ -1,0 +1,112 @@
+# Date: 04/03/2020
+
+import csv
+import datetime
+from datetime import date, timedelta
+import os
+import urllib.request
+
+day = datetime.datetime.today() - timedelta(1)
+formatDate = '{:02d}-{:02d}-{}'.format(day.month, day.day, day.year)
+print("Date for data analysis is : " + formatDate)
+url_source_data = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{}.csv".format(formatDate)
+data_filename = 'C:\\Code\\COVID\\' + formatDate + '.csv'
+urllib.request.urlretrieve(url_source_data, data_filename)
+
+# abstraction of combining two lists
+count = 0
+validStateList = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']
+for item in validStateList:
+    validStateList[count] = item.upper()
+    count += 1
+validStateCodeList = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM',  'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY']
+validArrayTuples = list(zip(validStateCodeList, validStateList))
+validArrayList = [list(elem) for elem in validArrayTuples]
+
+
+# Main Program
+validStateCode = False
+stateCode = ''
+
+# validate if it's a real state/place
+while validStateCode == False:
+    promptMessage = "Which state would you like COVID-19 analysis for? Please enter a valid two-character postal code. (Examples include AL, AK, AZ, etc.): "
+    if len(stateCode) > 0:
+        promptMessage = promptMessage + "{} is not a valid two-character postal code. ".format(stateCode)
+    stateCode = input(promptMessage)
+    stateCode = stateCode.upper()
+#    if stateCode in validStateCodeList:
+    for item in validArrayList:
+        if stateCode in item:
+            if stateCode == item[0]:
+                stateCode = item[1]
+            validStateCode = True
+print("Analyzing COVID-19 Data for " + str(stateCode) + "...")
+# open data file
+
+# set counters to 0
+line_count = 0
+state_line_count = 0
+state_confirmed = 0
+state_deaths = 0
+# state_recovered = 0
+state_active = 0
+
+# algorithm for data analysis 'sum stuff', 'count stuff', 'search for stuff'
+with open(data_filename) as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter =',')
+    for row in csv_reader:
+        if row[2].upper() == stateCode:
+            print(f'=============\n{row[1]}, {row[2]}')
+            print(f'{row[7]} Confirmed COVID-19 Cases \n{row[8]} Deaths \n{row[9]} Recoveries \n{row[10]} Active Cases')
+            #print('\n{} Confirmed COVID-19 Cases, {} COVID-19 Deaths {}.'.format(row[7], row[8], row[9]))
+            #print('\n' + str(row[7]) + ' Confirmed COVID-19 Cases, ' + str(row[8]) + ' COVID-19 Deaths ' + str(row[9]) + '.')
+            # add up all cases from input states
+            state_confirmed = state_confirmed + int(row[7])
+            state_deaths = state_deaths + int(row[8])
+            # state_recovered = state_recovered + int(row[9])
+            state_active = state_active + int(row[10])
+            state_line_count += 1
+        line_count += 1
+
+highest_cases = -1
+highest_cases_county = ''
+highest_deaths = -1
+highest_deaths_county = ''
+highest_percent_rip = float(0)
+highest_death_rate_county = ''
+highest_county_percent_rip = float(0)
+state_percent_rip = float(0)
+
+# calculate percentage
+if state_confirmed > 0:
+    state_percent_rip = (state_deaths / state_confirmed)
+
+# calculate percentages and ranks
+with open(data_filename) as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    for row in csv_reader:
+        if row[2].upper() == stateCode:
+            if int(row[7]) > highest_cases:
+                highest_cases = int(row[7])
+                highest_cases_county = row[1]
+            if int(row[8]) > highest_deaths:
+                highest_deaths = int(row[8])
+                highest_deaths_county = row[1]
+            if int(row[7]) > 0:
+                if (int(row[8])/int(row[7])) > highest_county_percent_rip:
+                    highest_county_percent_rip = (int(row[8])/int(row[7]))
+                    highest_death_rate_county = row[1]
+# output results
+print("====================")
+print(f'{state_line_count} counties in {stateCode} reported COVID-19 data.')
+if state_confirmed <= 0:
+    state_percent_rip = 0
+    highest_county_percent_rip = 0
+print(str(state_confirmed) + " people have contracted the disease.")
+print(str(state_deaths) + " people have died from the disease, which is approximately {:.1%}".format(state_percent_rip) + " of the total cases.")
+print("The county with the most cases is " + highest_cases_county + " County, with a total of " + str(highest_cases) + " cases.")
+print("The county with the highest deaths in is " + highest_deaths_county + " County, with a total of " + str(highest_deaths) + " deaths.")
+print("The county with the highest death rate is " + highest_death_rate_county + " County, with an estimated {:.1%}".format(highest_county_percent_rip) + " death rate.")
+print("There are " + str(state_active) + " active cases.")
+print("====================")
